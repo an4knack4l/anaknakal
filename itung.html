@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Slalom Classic 2026 - CodeMaster Refactored</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --bg-color: transparent; 
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px; 
+            padding-bottom: 120px; 
+            line-height: 1.5;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* --- BACKGROUND IMAGE SETUP --- */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url('https://images.unsplash.com/photo-1548705096-f6d39fa07e7b?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(4px) brightness(0.6);
+            transform: scale(1.05);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.6rem; 
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px; 
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem; 
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Styling Range Slider */
+        input[type="range"] {
+            width: 100%;
+            margin: 0 10px;
+            cursor: pointer;
+            height: 25px; 
+        }
+
+        input.error {
+            border-color: var(--danger-color);
+            background-color: #fef2f2;
+        }
+
+        .helper-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 16px;
+        }
+
+        /* --- TECH GRID STYLES --- */
+        .tech-grid-container {
+            border: none;
+            padding: 0;
+            background: transparent;
+        }
+
+        .tech-grid {
+            display: flex;
+            flex-direction: column; 
+            gap: 15px;
+            width: 100%;
+        }
+
+        .tech-col {
+            width: 100%;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .tech-header {
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 12px;
+            background-color: #f8fafc;
+            padding-top: 5px;
+            border-radius: 4px;
+        }
+
+        .trick-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px; 
+            align-items: center;
+        }
+
+        .trick-select {
+            flex: 1;
+            font-size: 0.9rem;
+            padding: 10px; 
+            width: 100px; 
+            text-overflow: ellipsis;
+        }
+
+        /* --- NEW: Score Adjuster for Mobile Friendly UX --- */
+        .score-adjust-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 44px; /* Menyesuaikan tinggi dengan dropdown */
+        }
+
+        .adj-btn {
+            background: #e2e8f0;
+            border: none;
+            color: #475569;
+            font-weight: bold;
+            width: 34px;
+            height: 100%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .adj-btn:active {
+            background: #cbd5e1;
+        }
+
+        .trick-score-input {
+            width: 40px !important;
+            padding: 0 !important;
+            text-align: center;
+            font-weight: bold;
+            background-color: transparent !important;
+            border: none !important;
+            font-size: 0.95rem;
+            -moz-appearance: textfield; /* Hilangkan spinner bawaan Firefox */
+        }
+
+        /* Hilangkan spinner bawaan Chrome/Safari/Edge agar seragam */
+        .trick-score-input::-webkit-outer-spin-button,
+        .trick-score-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .add-trick-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            background-color: #eff6ff;
+            color: var(--primary-color);
+            border: 1px dashed var(--primary-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .add-trick-btn:hover {
+            background-color: #dbeafe;
+        }
+
+        /* --- MEDIA QUERY --- */
+        @media (min-width: 768px) {
+            body { padding: 20px; padding-bottom: 100px; }
+            h1 { font-size: 1.8rem; }
+            
+            .grid-2 {
+                grid-template-columns: 1fr 1fr; 
+            }
+
+            /* Perbaiki di sini: Wajib letak flex-direction: row */
+            .tech-grid {
+                display: flex; 
+                flex-direction: row; /* Pastikan ia tersusun melintang (kiri ke kanan) */
+                flex-wrap: wrap; /* Benarkan ia turun ke baris bawah jika penuh */
+                justify-content: center; /* Susun baki jadual di bahagian tengah */
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .tech-col {
+                /* 100% dibahagi 3 lajur, tolak ruang kosong (gap) 30px */
+                width: calc((100% - 30px) / 3); 
+            }
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; 
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .checkbox-item input {
+            width: 22px; 
+            height: 22px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+
+        /* Calculation Info Box */
+        .calc-info {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .calc-row.total {
+            border-top: 1px solid #cbd5e1;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-weight: bold;
+            color: var(--danger-color);
+            font-size: 1.1rem;
+        }
+
+        /* Result Section Styles - FIXED BOTTOM LEFT */
+        .result-sticky {
+            position: fixed; 
+            bottom: 20px;
+            left: 20px;
+            right: auto; 
+            width: auto;
+            max-width: 340px; 
+            z-index: 1000;
+            padding: 0;
+            background: none;
+        }
+
+        .result-box {
+            background-color: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            text-align: left; 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .result-title {
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.65rem;
+            color: #94a3b8;
+            margin-bottom: 2px;
+        }
+
+        .final-score {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 2px 0 5px 0;
+            font-variant-numeric: tabular-nums;
+            color: #fff;
+        }
+
+        .breakdown {
+            display: flex;
+            justify-content: flex-start;
+            gap: 8px;
+            font-size: 0.75rem; 
+            color: #cbd5e1;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .breakdown span strong {
+            color: white;
+        }
+
+        /* NEW: Artistic Styles with Description */
+        .artistic-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Membuat 2 kolom */
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .artistic-wrapper {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            /* margin-bottom dihapus karena jarak sudah diatur oleh gap pada grid */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .artistic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .art-label {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 0.95rem; /* Dikecilkan sedikit agar pas di 2 kolom */
+        }
+        
+        .art-val {
+            font-weight: bold;
+            font-size: 1.05rem;
+            color: var(--primary-color);
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .art-desc-box {
+            margin-top: auto; /* Mendorong deskripsi ke bawah agar sejajar */
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 0.7rem; /* Dikecilkan agar rapi di kolom yang lebih sempit */
+            border: 1px solid #f1f5f9;
+        }
+
+        .art-desc-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+            align-items: flex-start;
+        }
+        
+        .art-desc-row:last-child { margin-bottom: 0; }
+
+        .badge-desc {
+            font-weight: bold;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .badge-min { background: #fee2e2; color: #991b1b; }
+        .badge-max { background: #dcfce7; color: #166534; }
+        
+        .desc-text {
+            color: #475569;
+            line-height: 1.3;
+        }
+
+        /* Penyesuaian khusus layar HP yang sangat kecil */
+        @media (max-width: 500px) {
+            .artistic-grid {
+                gap: 8px;
+            }
+            .artistic-wrapper {
+                padding: 10px;
+            }
+            .art-desc-box {
+                padding: 6px;
+                font-size: 0.65rem;
+            }
+        }
+
+        /* Watermark */
+        .watermark {
+            position: fixed;
+            top: 150px; 
+            left: 5px;
+            transform: rotate(-90deg);
+            transform-origin: top left; 
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7); 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); 
+            font-family: monospace;
+            z-index: 1100;
+            font-weight: bold;
+            letter-spacing: 1px;
+            pointer-events: none; 
+            white-space: nowrap;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .score-update {
+            animation: pulse 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+<div class="watermark">@an4knack4l</div>
+
+<div class="container">
+    <header>
+        <h1>🏆 LATIHAN NGITUNG</h1>
+        <p style="color: var(--text-muted); margin-top: 5px;">untuk para orang tua yang mau tau kira-kira berapa sih estimasi penilaian dari bocahnya.... (ini hanya estimasi, di lapangan banyak faktor x nya yaaa)</p>
+    </header>
+
+    <form id="scoreForm">
+        <!-- 1. TECHNIK -->
+        <div class="card">
+            <h2>
+                1. Teknik
+                <span class="badge badge-blue" id="techTotalDisplay">0</span>
+            </h2>
+            
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:15px; line-height:1.4;">
+                Pilih trik dari dropdown (nilai awal berdasarkan rulbuk, bisa diturunin kok klo triknya dirasa ga sempurna). Enak liat pake Tab/Laptop.... (klo dr HP perlu scroll atas bawah)
+            </p>
+
+            <div class="tech-grid-container">
+                <div class="tech-grid" id="techGrid">
+                    <!-- Columns will be generated by JS -->
+                </div>
+            </div>
+
+            <!-- Calculation Feedback -->
+            <div class="calc-info">
+                <div class="calc-row">
+                    <span>Range Dominan:</span>
+                    <strong id="dispDominantRange">-</strong>
+                </div>
+                <div class="calc-row">
+                    <span>Nilai Trik Gross (Avg):</span>
+                    <strong><span id="dispGrossTech">0</span></strong>
+                </div>
+                <div class="calc-row">
+                    <span>Jumlah Trik (Min 8):</span>
+                    <span><strong id="dispTricksCount">0</strong> <small id="lblMissTrick" style="color:red"></small></span>
+                </div>
+                <div class="calc-row">
+                    <span>Family Dilakukan (Min 5):</span>
+                    <span><strong id="dispFamiliesCount">0</strong>/5 <small id="lblMissFamily" style="color:red"></small></span>
+                </div>
+                <div class="calc-row total">
+                    <span>Net Teknik Score (T):</span>
+                    <span id="dispNetTech">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ARTISTIK (UPDATED LOGIC) -->
+        <div class="card">
+            <h2>
+                2. Artistik
+                <span class="badge badge-blue" id="artTotalDisplay">0</span>
+            </h2>
+            
+            <p style="font-size:0.85rem; color:#6b7280; margin-bottom:15px;">
+                Geser untuk memberi nilai (-10 s.d +10). Nilai akhir adalah Teknik + Rata-rata.
+            </p>
+
+            <div class="artistic-grid">
+                <!-- Body Performance -->
+                <div class="artistic-wrapper">
+                    <div class="artistic-header">
+                        <span class="art-label">Body Perf.</span>
+                        <span class="art-val" id="valArtBody">0</span>
+                    </div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px;">-10</span>
+                        <input type="range" id="artBody" min="-10" max="10" step="0.5" value="0">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px; text-align:right;">+10</span>
+                    </div>
+                    <div class="art-desc-box">
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-min">-10</span>
+                            <span class="desc-text">Kepala menunduk kaku, mata ke tanah. Tangan kaku/bergerak aneh & tidak natural.</span>
+                        </div>
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-max">+10</span>
+                            <span class="desc-text">Penggunaan kepala, lengan & tangan dinamis, fungsional mendukung skating & koreografi.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Music Expression -->
+                <div class="artistic-wrapper">
+                    <div class="artistic-header">
+                        <span class="art-label">Music Exp.</span>
+                        <span class="art-val" id="valArtMusic">0</span>
+                    </div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px;">-10</span>
+                        <input type="range" id="artMusic" min="-10" max="10" step="0.5" value="0">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px; text-align:right;">+10</span>
+                    </div>
+                    <div class="art-desc-box">
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-min">-10</span>
+                            <span class="desc-text">Tidak sesuai tempo/dinamika. Interpretasi membosankan, tanpa karakter.</span>
+                        </div>
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-max">+10</span>
+                            <span class="desc-text">Sesuai ritme & dinamika. Interpretasi emosional sangat baik bahkan saat trik sulit.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trick Management -->
+                <div class="artistic-wrapper">
+                    <div class="artistic-header">
+                        <span class="art-label">Trick Man.</span>
+                        <span class="art-val" id="valArtTrick">0</span>
+                    </div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px;">-10</span>
+                        <input type="range" id="artTrick" min="-10" max="10" step="0.5" value="0">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px; text-align:right;">+10</span>
+                    </div>
+                    <div class="art-desc-box">
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-min">-10</span>
+                            <span class="desc-text">Gerakan acak/tidak logis. Terlalu banyak skating di luar cone. Buang waktu.</span>
+                        </div>
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-max">+10</span>
+                            <span class="desc-text">Variasi logis sesuai musik. Sepenuhnya di dalam cone, trik sulit di tengah.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extra -->
+                <div class="artistic-wrapper">
+                    <div class="artistic-header">
+                        <span class="art-label">Extra</span>
+                        <span class="art-val" id="valArtExtra">0</span>
+                    </div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px;">-10</span>
+                        <input type="range" id="artExtra" min="-10" max="10" step="0.5" value="0">
+                        <span style="font-size:0.7rem; color:#9ca3af; width:20px; text-align:right;">+10</span>
+                    </div>
+                    <div class="art-desc-box">
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-min">-10</span>
+                            <span class="desc-text">Sangat buruk & tidak adanya kemampuan artistik sama sekali (Malus).</span>
+                        </div>
+                        <div class="art-desc-row">
+                            <span class="badge-desc badge-max">+10</span>
+                            <span class="desc-text">Performa luar biasa istimewa dalam segala aspek artistik (Bonus).</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="calc-info" style="margin-top:10px;">
+                <div class="calc-row">
+                    <span>Base Score (Dari Teknik):</span>
+                    <span id="dispArtBase">0</span>
+                </div>
+                <div class="calc-row">
+                    <span>Rata-rata Penyesuaian (Avg):</span>
+                    <span id="dispArtAvg" style="font-weight:bold; color:var(--primary-color);">0</span>
+                </div>
+                <div class="calc-row total">
+                    <span>Nilai Artistik (A) = (Teknik + Avg):</span>
+                    <span id="dispArtTotal">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PINALTI -->
+        <div class="card">
+            <h2>
+                3. Pinalti (Deductions)
+                <span class="badge badge-red" id="penTotalDisplay">-0</span>
+            </h2>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="penCone">Cone Jatuh/Geser</label>
+                    <input type="number" id="penCone" name="penCone" min="0" value="0">
+                    <div class="helper-text">-1 poin</div>
+                </div>
+                <div class="form-group">
+                    <label for="penLightFall">Jatuh Ringan (Light)</label>
+                    <input type="number" id="penLightFall" name="penLightFall" min="0" value="0">
+                    <div class="helper-text">-2 poin</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="penHardFall">Jatuh Berat (Impact)</label>
+                    <input type="number" id="penHardFall" name="penHardFall" min="0" value="0">
+                    <div class="helper-text">-5 poin</div>
+                </div>
+                <div class="form-group">
+                    <label for="penTime">Waktu (<105s / >120s)</label>
+                    <select id="penTime" name="penTime">
+                        <option value="0">Aman (105s - 120s)</option>
+                        <option value="10">Pelanggaran (-10 poin)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Pelanggaran Lainnya:</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="penMusic" value="10"> Musik Telat (-10)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="penInterval" value="5"> Miss >5 Interval (-5)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="penInterrupt" value="5"> Interupsi Internal (-5)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="penCostume" value="2"> Aksesoris Jatuh (-2)
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- HASIL -->
+    <div class="result-sticky">
+        <div class="result-box">
+            <div class="result-title">ESTIMASI SKOR</div>
+            <div class="final-score" id="finalScore">0</div>
+            <div class="breakdown">
+                <!-- FORMULA: Teknik + Artistik - Pinalti -->
+                <span>T: <strong id="resTech">0</strong></span>
+                <span>+</span>
+                <span>A: <strong id="resArt">0</strong></span>
+                <span>-</span>
+                <span>P: <strong id="resPen">0</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    'use strict';
+
+    // --- 1. CONFIGURATION & DATA ---
+
+    const RULES = {
+        TECH: {
+            MIN_TOTAL_TRICKS: 8,
+            DEDUCTION_PER_MISSING_TRICK: 2,
+            DEDUCTION_PER_MISSING_FAMILY: 3
+        },
+        PENALTY: {
+            CONE: 1,
+            LIGHT_FALL: 2,
+            HARD_FALL: 5
+        }
+    };
+
+    // Trick Database (Grouped by Family)
+    const TRICK_DB = {
+        sitting: [
+            { name: "Back Toe Christie", val: 55 },
+            { name: "Toe Christie", val: 53 },
+            { name: "Back Teapot / Superman", val: 50 },
+            { name: "Back Toe Footgun", val: 46 },
+            { name: "Teapot / Superman", val: 45 },
+            { name: "Toe Footgun", val: 43 },
+            { name: "Back Sitting Cobra", val: 40 },
+            { name: "Back Christie", val: 39 },
+            { name: "Sitting Cobra", val: 38 },
+            { name: "Christie", val: 37 },
+            { name: "Back Footgun", val: 34 },
+            { name: "Footgun", val: 33 },
+            { name: "Sit Heel Toe Back Cross", val: 30 },
+            { name: "Sit Heel Toe Cross", val: 28 },
+            { name: "Back Sit HT Snake", val: 25 },
+            { name: "Sit Heel Toe Snake", val: 23 },
+            { name: "Small Cart / 5 Wheels", val: 19 },
+            { name: "Sitting Fish", val: 10 }
+        ],
+        jumping: [
+            { name: "Front Toe Footgun Kazachok", val: 60 },
+            { name: "Heel Wiper", val: 59 },
+            { name: "Toe Wiper", val: 57 },
+            { name: "Footgun Spin Jump", val: 48 },
+            { name: "Footgun Wiper", val: 46 },
+            { name: "Back Kazachok", val: 44 },
+            { name: "Kazachok", val: 38 },
+            { name: "Kazachok Spin / F-Wiper", val: 35 },
+            { name: "Wiper", val: 33 },
+            { name: "Footspin Jump", val: 30 },
+            { name: "X Jump", val: 19 },
+            { name: "Crab Cross", val: 17 },
+            { name: "Crab Series", val: 14 }
+        ],
+        spinning: [
+            { name: "Back Toe Christie Spin", val: 60 },
+            { name: "Toe Christie Spin", val: 59 },
+            { name: "Back Toe Footgun Spin", val: 57 },
+            { name: "Toe Footgun Spin", val: 56 },
+            { name: "Back Seven Int/Ext", val: 54 },
+            { name: "1-Cone Back Seven", val: 53 },
+            { name: "1-Cone Toe Footgun Spin", val: 51 },
+            { name: "Seven Int/Ext", val: 50 },
+            { name: "1-Cone Seven", val: 49 },
+            { name: "Flat Back Seven", val: 45 },
+            { name: "Flat Seven", val: 42 },
+            { name: "1-Cone Back Korean", val: 41 },
+            { name: "Back Korean Spin", val: 40 },
+            { name: "1-Cone Korean Spin", val: 39 },
+            { name: "Korean Spin", val: 38 },
+            { name: "Back 2 Wheel Spin", val: 36 },
+            { name: "2 Wheels Spin", val: 35 },
+            { name: "Back J-Turn", val: 31 },
+            { name: "J-Turn", val: 30 },
+            { name: "Two Feet Spin", val: 29 },
+            { name: "Total Cross", val: 27 },
+            { name: "Italian / Volt", val: 19 },
+            { name: "Crazy Sun / Mexican", val: 17 },
+            { name: "Sun / Mabrouk", val: 15 }
+        ],
+        wheeling: [
+            { name: "Bwd/Side Leaf Series", val: 53 },
+            { name: "Wheeling Shifts/Counter", val: 52 },
+            { name: "Square Series", val: 51 },
+            { name: "Wheeling Flip/Daynight", val: 48 },
+            { name: "French Shift Series", val: 45 },
+            { name: "Toe Sewing Machine", val: 42 },
+            { name: "Back Wheeling", val: 40 },
+            { name: "Flat Shifts/Counter", val: 36 },
+            { name: "Fwd Wheeling", val: 35 },
+            { name: "Flat Flip/Daynight", val: 33 },
+            { name: "2 Wheels Back Cross", val: 27 },
+            { name: "2 Wheels Back Snake", val: 25 },
+            { name: "2 Wheels Cross", val: 23 },
+            { name: "2 Wheels Snake", val: 22 },
+            { name: "Back One Foot", val: 19 },
+            { name: "One Foot", val: 17 },
+            { name: "Back Snake / Cross", val: 15 },
+            { name: "Snake / Cross", val: 12 },
+            { name: "Fish", val: 10 }
+        ],
+        others: [
+            { name: "Butterfly Cross", val: 51 },
+            { name: "Butterfly", val: 46 },
+            { name: "Toe Toe Reverse Eagle", val: 43 },
+            { name: "Back Cobra", val: 38 },
+            { name: "Cobra / Reverse Eagle", val: 36 },
+            { name: "2 Wheels Eagle", val: 34 },
+            { name: "Z-Eagle", val: 31 },
+            { name: "Toe Toe Special", val: 30 },
+            { name: "Brush", val: 28 },
+            { name: "Heel Toe Special", val: 27 },
+            { name: "Eagle / Eagle Cross", val: 26 },
+            { name: "Sweepers", val: 24 },
+            { name: "Eight", val: 20 },
+            { name: "Back Eight", val: 18 },
+            { name: "Stroll / Back Stroll", val: 16 },
+            { name: "Crazy / D-Crazy", val: 15 },
+            { name: "Chapchap / X", val: 13 },
+            { name: "Mega Series", val: 12 },
+            { name: "Nelson / Back Nelson", val: 10 }
+        ]
+    };
+
+    // --- 2. DOM ELEMENTS CACHE ---
+    const ui = {
+        form: document.getElementById('scoreForm'),
+        techGrid: document.getElementById('techGrid'),
+        inputs: {
+            artBody: document.getElementById('artBody'),
+            artMusic: document.getElementById('artMusic'),
+            artTrick: document.getElementById('artTrick'),
+            artExtra: document.getElementById('artExtra'),
+            penCone: document.getElementById('penCone'),
+            penLightFall: document.getElementById('penLightFall'),
+            penHardFall: document.getElementById('penHardFall'),
+            penTime: document.getElementById('penTime'),
+        },
+        display: {
+            techTotal: document.getElementById('techTotalDisplay'),
+            artTotal: document.getElementById('artTotalDisplay'),
+            penTotal: document.getElementById('penTotalDisplay'),
+            finalScore: document.getElementById('finalScore'),
+            resTech: document.getElementById('resTech'),
+            resArt: document.getElementById('resArt'),
+            resPen: document.getElementById('resPen'),
+            dispDominantRange: document.getElementById('dispDominantRange'),
+            dispGrossTech: document.getElementById('dispGrossTech'),
+            dispTricksCount: document.getElementById('dispTricksCount'),
+            lblMissTrick: document.getElementById('lblMissTrick'),
+            dispFamiliesCount: document.getElementById('dispFamiliesCount'),
+            lblMissFamily: document.getElementById('lblMissFamily'),
+            dispNetTech: document.getElementById('dispNetTech'),
+            dispArtBase: document.getElementById('dispArtBase'),
+            dispArtAvg: document.getElementById('dispArtAvg'),
+            dispArtTotal: document.getElementById('dispArtTotal'),
+            // Badges for art sliders
+            valArtBody: document.getElementById('valArtBody'),
+            valArtMusic: document.getElementById('valArtMusic'),
+            valArtTrick: document.getElementById('valArtTrick'),
+            valArtExtra: document.getElementById('valArtExtra'),
+        }
+    };
+
+    // --- 3. INIT & RENDER FUNCTIONS ---
+    
+    function renderTechGrid() {
+        // Clear existing
+        ui.techGrid.innerHTML = '';
+
+        const families = ['sitting', 'jumping', 'spinning', 'wheeling', 'others'];
+        const initialRowCount = 3;
+
+        families.forEach(family => {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'tech-col';
+            
+            // Header
+            const header = document.createElement('div');
+            header.className = 'tech-header';
+            header.textContent = family;
+            colDiv.appendChild(header);
+
+            // Container khusus untuk list baris (agar tombol Add tetap di bawah)
+            const rowsContainer = document.createElement('div');
+            colDiv.appendChild(rowsContainer);
+
+            // Generate Dropdown Options for this family
+            const trickOptions = TRICK_DB[family].map(t => 
+                `<option value="${t.val}">${t.name} (${t.val})</option>`
+            ).join('');
+            
+            const emptyOption = `<option value="">- Pilih Trik -</option>`;
+
+            // Fungsi Helper untuk membuat 1 baris trik
+            const addRow = () => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'trick-row';
+
+                // Select
+            const select = document.createElement('select');
+            select.className = 'trick-select';
+            select.dataset.family = family;
+            select.innerHTML = emptyOption + trickOptions;
+            
+            // Input Score
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'tech-score trick-score-input';
+            input.dataset.family = family;
+            input.min = 0;
+            input.max = 60;
+            input.placeholder = '0';
+
+            // --- NEW: Wrapper & Buttons for Mobile UX ---
+            const scoreWrapper = document.createElement('div');
+            scoreWrapper.className = 'score-adjust-wrapper';
+
+            const btnMinus = document.createElement('button');
+            btnMinus.type = 'button';
+            btnMinus.className = 'adj-btn';
+            btnMinus.textContent = '-';
+            btnMinus.onclick = () => {
+                let val = parseFloat(input.value) || 0;
+                if (val > 0) {
+                    input.value = val - 1; // Kurangi 1 poin
+                    calculateScore();
+                }
+            };
+
+            const btnPlus = document.createElement('button');
+            btnPlus.type = 'button';
+            btnPlus.className = 'adj-btn';
+            btnPlus.textContent = '+';
+            btnPlus.onclick = () => {
+                let val = parseFloat(input.value) || 0;
+                if (val < 60) {
+                    input.value = val + 1; // Tambah 1 poin
+                    calculateScore();
+                }
+            };
+
+            scoreWrapper.appendChild(btnMinus);
+            scoreWrapper.appendChild(input);
+            scoreWrapper.appendChild(btnPlus);
+            // ---------------------------------------------
+
+            // Event Listener: When Select changes, update Input
+            select.addEventListener('change', function() {
+                const val = this.value;
+                input.value = val;
+                calculateScore(); // Recalc
+            });
+
+            // Event Listener: When Input changes, recalc
+            input.addEventListener('input', calculateScore);
+
+            rowDiv.appendChild(select);
+            rowDiv.appendChild(scoreWrapper); // Pasang wrapper-nya sebagai ganti input langsung
+            rowsContainer.appendChild(rowDiv);
+        };
+
+        // Generate 3 baris default di awal
+            for (let i = 0; i < initialRowCount; i++) {
+                addRow();
+            }
+
+            // Buat tombol "+ Tambah Trik" di bagian paling bawah tiap Family
+            const btnAdd = document.createElement('button');
+            btnAdd.type = 'button'; // Wajib button agar tidak submit form
+            btnAdd.className = 'add-trick-btn';
+            btnAdd.textContent = '+ Tambah Trik';
+            btnAdd.onclick = addRow; // Jika diklik, tambah 1 baris baru
+            colDiv.appendChild(btnAdd);
+
+            ui.techGrid.appendChild(colDiv);
+        });
+    }
+
+
+    // --- 4. CALCULATION LOGIC ---
+    
+    const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+    const isChecked = (name) => {
+        const el = document.querySelector(`input[name="${name}"]`);
+        return el && el.checked ? parseFloat(el.value) : 0;
+    };
+
+    function calculateScore() {
+        // --- A. PENGHITUNGAN TEKNIK (T) ---
+        let totalTrickCount = 0;
+        let familiesSet = new Set(); 
+        let buckets = [[], [], [], [], [], []];
+        const rangeLabels = ["1-10", "11-20", "21-30", "31-40", "41-50", "51-60"];
+
+        // Select all score inputs that have been generated
+        const techInputs = document.querySelectorAll('.tech-score');
+        
+        techInputs.forEach(input => {
+            const val = parseFloat(input.value) || 0;
+            if (val > 0) {
+                totalTrickCount++;
+                familiesSet.add(input.dataset.family);
+                let bucketIdx = Math.floor((val - 1) / 10);
+                if (bucketIdx < 0) bucketIdx = 0;
+                if (bucketIdx > 5) bucketIdx = 5;
+                buckets[bucketIdx].push(val);
+            }
+        });
+
+        // Dominant Range Logic
+        let maxCount = 0;
+        buckets.forEach(b => { if (b.length > maxCount) maxCount = b.length; });
+
+        let grossTechScore = 0;
+        let dominantRangeLabel = "-";
+
+        if (maxCount > 0) {
+            let candidateIndices = [];
+            buckets.forEach((b, i) => { if (b.length === maxCount) candidateIndices.push(i); });
+            // Tie breaker: higher range wins
+            let winningIdx = candidateIndices[candidateIndices.length - 1];
+            let winningValues = buckets[winningIdx];
+            let sum = winningValues.reduce((a, b) => a + b, 0);
+            grossTechScore = sum / winningValues.length;
+            dominantRangeLabel = `${rangeLabels[winningIdx]} (${winningValues.length} trik)`;
+        }
+
+        grossTechScore = parseFloat(grossTechScore.toFixed(2));
+
+        // Deductions
+        const missingTricks = Math.max(0, RULES.TECH.MIN_TOTAL_TRICKS - totalTrickCount);
+        const deductionTricks = missingTricks * RULES.TECH.DEDUCTION_PER_MISSING_TRICK;
+
+        const familiesCount = familiesSet.size;
+        const missingFamilies = 5 - familiesCount;
+        const deductionFamilies = missingFamilies * RULES.TECH.DEDUCTION_PER_MISSING_FAMILY;
+
+        // NILAI TEKNIK FINAL (T)
+        const nilaiTeknik = Math.max(0, grossTechScore - deductionTricks - deductionFamilies);
+        const nilaiTeknikFormatted = parseFloat(nilaiTeknik.toFixed(2));
+
+        // Update UI Tech
+        ui.display.dispDominantRange.textContent = dominantRangeLabel;
+        ui.display.dispGrossTech.textContent = grossTechScore;
+        ui.display.dispTricksCount.textContent = totalTrickCount;
+        ui.display.lblMissTrick.textContent = missingTricks > 0 ? `(-${deductionTricks})` : '';
+        ui.display.dispFamiliesCount.textContent = familiesCount;
+        ui.display.lblMissFamily.textContent = missingFamilies > 0 ? `(-${deductionFamilies})` : '';
+        ui.display.dispNetTech.textContent = nilaiTeknikFormatted;
+        ui.display.techTotal.textContent = nilaiTeknikFormatted;
+
+
+        // --- B. PENGHITUNGAN ARTISTIK (A) ---
+        const vBody = getVal('artBody');
+        const vMusic = getVal('artMusic');
+        const vTrick = getVal('artTrick');
+        const vExtra = getVal('artExtra');
+
+        // Update display text next to sliders
+        ui.display.valArtBody.textContent = (vBody > 0 ? "+" : "") + vBody;
+        ui.display.valArtMusic.textContent = (vMusic > 0 ? "+" : "") + vMusic;
+        ui.display.valArtTrick.textContent = (vTrick > 0 ? "+" : "") + vTrick;
+        ui.display.valArtExtra.textContent = (vExtra > 0 ? "+" : "") + vExtra;
+
+        // 1. Hitung Rata-rata dari ke 4 komponen artistik (+/- 10)
+        let rataRataArtistik = (vBody + vMusic + vTrick + vExtra) / 4;
+        
+        // 2. Hitung Nilai Artistik Akhir (A) = Nilai Teknik (T) + Rata-rata Artistik
+        const nilaiArtistik = nilaiTeknikFormatted + rataRataArtistik;
+        const nilaiArtistikFormatted = parseFloat(nilaiArtistik.toFixed(2));
+        const rataRataFormatted = parseFloat(rataRataArtistik.toFixed(3));
+
+        ui.display.dispArtBase.textContent = nilaiTeknikFormatted;
+        ui.display.dispArtAvg.textContent = (rataRataArtistik >= 0 ? "+" : "") + rataRataFormatted;
+        ui.display.dispArtAvg.style.color = rataRataArtistik >= 0 ? "var(--success-color)" : "var(--danger-color)";
+        ui.display.dispArtTotal.textContent = nilaiArtistikFormatted;
+        ui.display.artTotal.textContent = nilaiArtistikFormatted;
+
+
+        // --- C. PENALTY & FINAL ---
+        const penCone = getVal('penCone');
+        const penLight = getVal('penLightFall');
+        const penHard = getVal('penHardFall');
+        const penTime = getVal('penTime');
+        const penMusic = isChecked('penMusic');
+        const penInterval = isChecked('penInterval');
+        const penInterrupt = isChecked('penInterrupt');
+        const penCostume = isChecked('penCostume');
+
+        const totalPinalti = (penCone * RULES.PENALTY.CONE) +
+                             (penLight * RULES.PENALTY.LIGHT_FALL) +
+                             (penHard * RULES.PENALTY.HARD_FALL) +
+                             penTime + penMusic + penInterval + penInterrupt + penCostume;
+
+        // RUMUS FINAL SKOR = Teknik (T) + Artistik (A) - Pinalti (P)
+        // dimana A = T + rataRataArtistik
+        let skorAkhir = nilaiTeknikFormatted + nilaiArtistik - totalPinalti; 
+        skorAkhir = parseFloat(skorAkhir.toFixed(3));
+        
+        ui.display.penTotal.textContent = `-${totalPinalti}`;
+        
+        // Update Breakdown di bagian bawah layar
+        ui.display.resTech.textContent = nilaiTeknikFormatted; // T
+        ui.display.resArt.textContent = nilaiArtistikFormatted; // A
+        ui.display.resPen.textContent = totalPinalti;           // P
+
+        const currentDisplayed = parseFloat(ui.display.finalScore.textContent);
+        ui.display.finalScore.textContent = skorAkhir;
+        
+        if (currentDisplayed !== skorAkhir) {
+            ui.display.finalScore.classList.remove('score-update');
+            void ui.display.finalScore.offsetWidth; 
+            ui.display.finalScore.classList.add('score-update');
+        }
+    }
+
+    // --- 5. EVENT LISTENERS & SETUP ---
+    
+    // Render the grid first
+    renderTechGrid();
+
+    // Artistic Sliders Listeners
+    ['artBody', 'artMusic', 'artTrick', 'artExtra'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateScore);
+    });
+
+    // General form listener (delegation for static elements)
+    ui.form.addEventListener('change', (e) => {
+        if (!e.target.classList.contains('trick-select') && !e.target.classList.contains('tech-score')) {
+            calculateScore();
+        }
+    });
+    
+    // Input listener for Penalty numbers
+    ['penCone', 'penLightFall', 'penHardFall'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateScore);
+    });
+
+    // Initial Calc
+    calculateScore();
+
+</script>
+</body>
+</html>
